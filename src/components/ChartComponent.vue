@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import Chart from 'chart.js/auto';
-import { onMounted } from 'vue';
+import { onMounted, ref, computed } from 'vue';
 
 onMounted(() => {
   const ctx = document.getElementById('myChart') as HTMLCanvasElement | null;
@@ -46,6 +46,20 @@ onMounted(() => {
         }
       }
     });
+
+    let stockSymbol = ref('IBM');
+    const apiKey = import.meta.env.VITE_API_KEY;
+    let apiUrl = computed(() => {
+      return `https://www.alphavantage.co/query?function=TIME_SERIES_MONTHLY&symbol=${stockSymbol.value}&apikey=${apiKey}`;
+    })
+
+    const createChartWithDate = async (dateRange: string) => {
+      const response = await fetch(apiUrl.value);
+      const data = await response.json();
+      console.log(data['Meta Data']['2. Symbol']);
+      console.log(data['Monthly Time Series']['1999-12-31']);
+    }
+    createChartWithDate("");
   }
 });
 </script>

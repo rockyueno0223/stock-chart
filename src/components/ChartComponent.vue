@@ -2,51 +2,12 @@
 import Chart from 'chart.js/auto';
 import { onMounted, ref, computed } from 'vue';
 
+let stockHistoryPrices: number[] = [];
+let stockHistoryDates: string[] = [];
+
 onMounted(() => {
   const ctx = document.getElementById('myChart') as HTMLCanvasElement | null;
   if (ctx) {
-    new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange', 'Pink'],
-        datasets: [{
-          label: '# of Votes',
-          data: [12, 19, 3, 5, 2, 3, 8],
-          borderWidth: 1,
-          borderColor: 'red'
-        }]
-      },
-      options: {
-        scales: {
-          y: {
-            beginAtZero: true
-          }
-        },
-        elements: {
-          point: {
-            pointStyle: false
-          }
-        },
-        plugins: {
-          tooltip: {
-            callbacks: {
-              label: function(context) {
-                let label = context.dataset.label || '';
-
-                if (label) {
-                  label += ': ';
-                }
-                if (context.parsed.y !== null) {
-                  label += new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(context.parsed.y);
-                }
-                return label;
-              }
-            }
-          }
-        }
-      }
-    });
-
     let stockSymbol = ref('IBM');
     const apiKey = import.meta.env.VITE_API_KEY;
     let apiUrl = computed(() => {
@@ -54,10 +15,64 @@ onMounted(() => {
     })
 
     const createChartWithDate = async (dateRange: string) => {
+      // fetch stock price data and push to array
       const response = await fetch(apiUrl.value);
       const data = await response.json();
+
+      console.log(data);
       console.log(data['Meta Data']['2. Symbol']);
+      console.log(Object.keys(data['Monthly Time Series'])[0]);
       console.log(data['Monthly Time Series']['1999-12-31']);
+
+      for (let property in data['Monthly Time Series']) {
+        const formattedStockHistoryDate = `${property.split('-')[1]}/${property.split('-')[2]}/${property.split('-')[0]}`
+        stockHistoryDates.unshift(formattedStockHistoryDate);
+
+        stockHistoryPrices.unshift(Number(data['Monthly Time Series'][property]['4. close']));
+      }
+
+      // create chart with fetched data
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: stockHistoryDates,
+          datasets: [{
+            label: 'Stock Market Price',
+            data: stockHistoryPrices,
+            borderWidth: 1,
+            borderColor: 'red'
+          }]
+        },
+        options: {
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          },
+          elements: {
+            point: {
+              pointStyle: false
+            }
+          },
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  let label = context.dataset.label || '';
+
+                  if (label) {
+                    label += ': ';
+                  }
+                  if (context.parsed.y !== null) {
+                    label += new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(context.parsed.y);
+                  }
+                  return label;
+                }
+              }
+            }
+          }
+        }
+      });
     }
     createChartWithDate("");
   }

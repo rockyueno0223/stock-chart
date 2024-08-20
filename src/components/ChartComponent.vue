@@ -105,7 +105,7 @@ const createChartWithDate = async (inputValue: string) => {
             label: 'Stock Market Price',
             data: stockHistoryPrices,
             borderWidth: 1,
-            borderColor: 'red'
+            borderColor: '#2485e7'
           }]
         },
         options: {
@@ -123,11 +123,7 @@ const createChartWithDate = async (inputValue: string) => {
             tooltip: {
               callbacks: {
                 label: function (context) {
-                  let label = context.dataset.label || '';
-
-                  if (label) {
-                    label += ': ';
-                  }
+                  let label = ''
                   if (context.parsed.y !== null) {
                     label += new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(context.parsed.y);
                   }
@@ -152,25 +148,53 @@ onMounted(() => {
 </script>
 
 <template >
-  <div class="w-full flex flex-col justify-center">
-    <p v-if="errorMsg" class="w-full text-center text-lg text-red-600">{{ errorMsg }}</p>
-    <form action="" id="search-form" class="w-full">
+  <div class="w-full max-w-screen-xl mx-auto flex flex-col justify-center pt-12 pb-12">
+    <p v-if="errorMsg" class="w-full text-center text-xl text-red-600 mb-4">{{ errorMsg }}</p>
+    <form action="" id="search-form" class="w-full flex flex-col gap-4 justify-center mb-6">
       <input
         type="text"
         name="search-form-symbol"
         id="search-form-symbol"
         placeholder="Search Stock Symbol"
         v-model="inputStockSymbol"
-        class="border border-black rounded"
+        class="w-72 mx-auto px-2 py-1 border border-black rounded"
       >
-      <div class="w-full flex justify-center">
-        <button type="button" @click="createChartWithDate('1month')" class="border border-black rounded mx-1 px-2">1 Month</button>
-        <button type="button" @click="createChartWithDate('1year')" class="border border-black rounded mx-1 px-2">1 Year</button>
-        <button type="button" @click="createChartWithDate('5years')" class="border border-black rounded mx-1 px-2">5 Years</button>
-        <button type="button" @click="createChartWithDate('max')" class="border border-black rounded mx-1 px-2">Max</button>
+      <div class="w-full flex justify-center mt-4">
+        <button
+          type="button"
+          @click="createChartWithDate('1month')"
+          class="w-20 text-slate-400 border-b mx-1 py-1"
+          :class="dateRange === '1month' ? 'text-slate-700 border-slate-700' : 'text-slate-400 border-slate-400'"
+        >
+          1 Month
+        </button>
+        <button
+          type="button"
+          @click="createChartWithDate('1year')"
+          class="w-20 text-slate-400 border-b mx-1 py-1"
+          :class="dateRange === '1year' ? 'text-slate-700 border-slate-700' : 'text-slate-400 border-slate-400'"
+        >
+          1 Year
+        </button>
+        <button
+          type="button"
+          @click="createChartWithDate('5years')"
+          class="w-20 text-slate-400 border-b mx-1 py-1"
+          :class="dateRange === '5years' ? 'text-slate-700 border-slate-700' : 'text-slate-400 border-slate-400'"
+        >
+          5 Years
+        </button>
+        <button
+          type="button"
+          @click="createChartWithDate('max')"
+          class="w-20 border-b mx-1 py-1"
+          :class="dateRange === 'max' ? 'text-slate-700 border-slate-700' : 'text-slate-400 border-slate-400'"
+        >
+          Max
+        </button>
       </div>
     </form>
-    <p>Stock Symbol: {{ activeStockSymbol }}</p>
+    <p class="text-center text-xl mb-6">Stock Symbol: {{ activeStockSymbol }}</p>
     <canvas id="myChart"></canvas>
   </div>
 </template>

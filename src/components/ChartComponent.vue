@@ -7,16 +7,17 @@ let stockHistoryDates: string[] = [];
 
 const apiKey = import.meta.env.VITE_API_KEY;
 
-let stockSymbol = ref('IBM');
+let inputStockSymbol = ref('IBM');
+let activeStockSymbol = ref('');
 let dateRange = ref('max')
 
 let apiUrl = computed(() => {
   if (dateRange.value === 'max' || dateRange.value === '5years') {
-    return `https://www.alphavantage.co/query?function=TIME_SERIES_MONTHLY_ADJUSTED&symbol=${stockSymbol.value}&apikey=${apiKey}`;
+    return `https://www.alphavantage.co/query?function=TIME_SERIES_MONTHLY_ADJUSTED&symbol=${activeStockSymbol.value}&apikey=${apiKey}`;
   } else if (dateRange.value === '1year') {
-    return `https://www.alphavantage.co/query?function=TIME_SERIES_WEEKLY_ADJUSTED&symbol=${stockSymbol.value}&apikey=${apiKey}`;
+    return `https://www.alphavantage.co/query?function=TIME_SERIES_WEEKLY_ADJUSTED&symbol=${activeStockSymbol.value}&apikey=${apiKey}`;
   } else if(dateRange.value === '1month'){
-    return `https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=${stockSymbol.value}&interval=60min&outputsize=full&extended_hours=false&apikey=${apiKey}`;
+    return `https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=${activeStockSymbol.value}&interval=60min&outputsize=full&extended_hours=false&apikey=${apiKey}`;
   } else {
     return '';
   }
@@ -34,6 +35,7 @@ const createChartWithDate = async (inputValue: string) => {
       }
 
       // fetch stock price data and push to array
+      activeStockSymbol.value = inputStockSymbol.value;
       dateRange.value = inputValue;
 
       const response = await fetch(apiUrl.value);
@@ -145,7 +147,7 @@ onMounted(() => {
   <div class="w-full flex flex-col justify-center">
     <h2>Chart</h2>
     <form action="" id="search-form" class="w-full">
-      <input type="text" name="search-form-symbol" id="search-form-symbol" :value="stockSymbol" class="border border-black rounded">
+      <input type="text" name="search-form-symbol" id="search-form-symbol" v-model="inputStockSymbol" class="border border-black rounded">
       <div class="w-full flex justify-center">
         <button type="button" @click="createChartWithDate('1month')" class="border border-black rounded mx-1 px-2">1 Month</button>
         <button type="button" @click="createChartWithDate('1year')" class="border border-black rounded mx-1 px-2">1 Year</button>
@@ -153,7 +155,7 @@ onMounted(() => {
         <button type="button" @click="createChartWithDate('max')" class="border border-black rounded mx-1 px-2">Max</button>
       </div>
     </form>
-    <p>Stock Symbol: {{ stockSymbol }}</p>
+    <p>Stock Symbol: {{ activeStockSymbol }}</p>
     <p>date range: {{ dateRange }}</p>
     <p>api url: {{ apiUrl }}</p>
     <canvas id="myChart"></canvas>

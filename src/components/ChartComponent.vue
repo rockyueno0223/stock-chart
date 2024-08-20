@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import Chart from 'chart.js/auto';
 import { onMounted, ref, computed } from 'vue';
+import type { Ref } from 'vue'
 
 let stockHistoryPrices: number[] = [];
 let stockHistoryDates: string[] = [];
@@ -10,6 +11,7 @@ const apiKey = import.meta.env.VITE_API_KEY;
 let inputStockSymbol = ref('IBM');
 let activeStockSymbol = ref('');
 let dateRange = ref('max')
+let errorMsg: Ref<string | null> = ref(null);
 
 let apiUrl = computed(() => {
   if (dateRange.value === 'max' || dateRange.value === '5years') {
@@ -42,6 +44,10 @@ const createChartWithDate = async (inputValue: string) => {
       const data = await response.json();
 
       console.log(data);
+
+      if (Object.keys(data).length === 1) {
+        throw new Error(data["Error Message"]);
+      }
 
       let sortedData: { [key: string] : any } = {};
 
@@ -132,8 +138,10 @@ const createChartWithDate = async (inputValue: string) => {
           }
         }
       });
+      errorMsg.value = null;
     } catch (error) {
       console.error('Error fetching data and creating chart', error);
+      errorMsg.value = 'Fail to get stock market price'
     }
   }
 };
@@ -146,8 +154,16 @@ onMounted(() => {
 <template >
   <div class="w-full flex flex-col justify-center">
     <h2>Chart</h2>
+    <p v-if="errorMsg" class="w-full text-center text-lg text-red-600">{{ errorMsg }}</p>
     <form action="" id="search-form" class="w-full">
-      <input type="text" name="search-form-symbol" id="search-form-symbol" v-model="inputStockSymbol" class="border border-black rounded">
+      <input
+        type="text"
+        name="search-form-symbol"
+        id="search-form-symbol"
+        placeholder="Search Stock Symbol"
+        v-model="inputStockSymbol"
+        class="border border-black rounded"
+      >
       <div class="w-full flex justify-center">
         <button type="button" @click="createChartWithDate('1month')" class="border border-black rounded mx-1 px-2">1 Month</button>
         <button type="button" @click="createChartWithDate('1year')" class="border border-black rounded mx-1 px-2">1 Year</button>

@@ -153,7 +153,6 @@ onMounted(() => {
 
 <template >
   <div class="w-full flex flex-col justify-center">
-    <h2>Chart</h2>
     <p v-if="errorMsg" class="w-full text-center text-lg text-red-600">{{ errorMsg }}</p>
     <form action="" id="search-form" class="w-full">
       <input
@@ -172,8 +171,6 @@ onMounted(() => {
       </div>
     </form>
     <p>Stock Symbol: {{ activeStockSymbol }}</p>
-    <p>date range: {{ dateRange }}</p>
-    <p>api url: {{ apiUrl }}</p>
     <canvas id="myChart"></canvas>
   </div>
 </template>
